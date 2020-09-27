@@ -1,3 +1,7 @@
+# Užitečné? odkazy
+https://www.toptal.com/deep-learning/pytorch-reinforcement-learning-tutorial
+
+
 # Dice Wars
 
 Dice Wars is a strategy game where players take turns to attack adjacent territories to expand
