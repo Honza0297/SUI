@@ -34,6 +34,8 @@ class AI:
         self.logger = logging.getLogger('AI')
 
         self.players = board.nb_players_alive()
+        self.nb_players = board.nb_players_alive()
+
         self.largest_region = []
 
         self.players_order = players_order
@@ -59,6 +61,15 @@ class AI:
         probability.
         """
         self.board = board
+
+        self.board = board
+        self.logger.warning("---------------------")
+        self.logger.warning("{}".format(len(board.get_players_regions(self.player_name))))  # Počet regionů:
+        self.logger.warning("{}".format(self.get_largest_region()))  # Njevětší region:
+        self.logger.warning("{}".format(board.get_player_dice(self.player_name)))  # Počet kostek mých
+        self.logger.warning("{}".format(self.get_avg_dice()))  # Prumer poctu kostek ostatnich:
+        self.logger.warning("{}".format(nb_turns_this_game))  # Pocet odehranych kol:
+        self.logger.warning("---------------------")
         self.logger.debug("Looking for possible turns.")
         turns = self.possible_turns()
         if turns and turns[0][0] != 'end':
@@ -213,3 +224,13 @@ class AI:
             for area in region:
                 self.largest_region.append(area)
         return max_region_size
+
+    def get_avg_dice(self):
+        sum = 0.0
+        for num in range(1,self.nb_players+1):
+            if(num == self.player_name): pass
+            sum += self.board.get_player_dice(num)
+
+        return sum / (self.nb_players-1)
+
+
