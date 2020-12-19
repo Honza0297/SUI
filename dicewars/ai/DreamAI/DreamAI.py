@@ -7,6 +7,7 @@ from dicewars.ai.utils import possible_attacks, probability_of_holding_area as c
 from dicewars.client.ai_driver import BattleCommand, EndTurnCommand
 from dicewars.client.game.board import Board
 from dicewars.client.game.player import Player
+from typing import List, Optional
 
 class AI:
     def __init__(self, player_name, board, players_order):
@@ -15,12 +16,13 @@ class AI:
         # Pred odevzdanim zmenit na stderr!!!
         out_hdlr = logging.StreamHandler(sys.stdout)
         self.logger.addHandler(out_hdlr)
+        print(player_name)
+
     def ai_turn(self, board, nb_moves_this_turn, nb_turns_this_game, time_left):
         """AI agent's turn
         Get a random area. If it has a possible move, the agent will do it.
         If there are no more moves, the agent ends its turn.
         """
-        print("nejdelsi moje hranice:" + str(len(Helper.get_borders_of_largest_region(board, self.player_name)[0])))
 
         attacks = list(possible_attacks(board, self.player_name))
         while attacks:
@@ -36,18 +38,8 @@ class AI:
 
 class Helper:
     @staticmethod
-    def get_player_largest_region(board: Board, player_name):
-        """Get size of the largest region, including the areas within
-        Attributes
-        ----------
-        largest_region : list of int
-            Names of areas in the largest region
-        Returns
-        -------
-            List
-            Number of areas in the largest region
-        """
-        largest_region = []
+    def player_largest_region(board: Board, player_name):
+        """Get size of the largest region, including the areas within"""
 
         players_regions = board.get_players_regions(player_name)
         max_region_size = max(len(region) for region in players_regions)
@@ -58,9 +50,19 @@ class Helper:
 
 
     @staticmethod
-    def get_borders_of_largest_region(board: Board, player_name):
-        region = Helper.get_player_largest_region(board, player_name)
-        return [area for area in region if board.is_at_border(area)]
+    def borders_of_largest_region(board: Board, player_name) -> List[int]:
+        """Get borders IDs of largest region"""
+        region = Helper.player_largest_region(board, player_name)
+        return [areaID for areaID in region if board.is_at_border(board.get_area(areaID))]
 
+    @staticmethod
+    def avg_nb_of_border_dice(board: Board, player_name):
+        """Get average number of dice on border of largest region"""
+        border = Helper.borders_of_largest_region(board, player_name)
+        dice_sum = 0
+        for areaID in border:
+            dice_sum += board.get_area(areaID).get_dice()
+
+        return dice_sum/len(border)
 
 
