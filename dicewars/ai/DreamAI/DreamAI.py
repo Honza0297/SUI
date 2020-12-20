@@ -24,6 +24,9 @@ class AI:
         If there are no more moves, the agent ends its turn.
         """
 
+        print(Helper.avg_prob_of_holding_borders(board, self.player_name))
+        print(Helper.avg_prob_of_holding_borders(board, self.player_name, True))
+
         attacks = list(possible_attacks(board, self.player_name))
         while attacks:
             source, target = attacks.pop()
@@ -65,4 +68,18 @@ class Helper:
 
         return dice_sum/len(border)
 
+    @staticmethod
+    def avg_prob_of_holding_borders(board: Board, player_name:int, largest_region_only=False):
+        """Get average probability of holding border areas until next turn"""
+        if(largest_region_only):
+            border_ids = Helper.borders_of_largest_region(board, player_name)
+            borders = [board.get_area(areaID) for areaID in border_ids]
+        else:
+            borders = board.get_player_border(player_name)
+
+        probs = 0
+        for area in borders:
+            probs += can_hold(board, area.get_name(), area.get_dice(), player_name)
+
+        return probs/len(borders)
 
