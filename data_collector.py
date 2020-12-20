@@ -4,7 +4,7 @@ import json, csv
 import re
 import sys
 
-num_of_features = 5
+num_of_features = 11
 AIs = ["dt.sdc", "dt.ste", "dt.stei", "dt.wpm_c"]
 
 

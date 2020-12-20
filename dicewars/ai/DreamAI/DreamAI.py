@@ -35,6 +35,12 @@ class AI:
         self.logger.warning("{}".format(self.get_largest_region()))#Njevětší region:
         self.logger.warning("{}".format(board.get_player_dice(self.player_name))) # Počet kostek mých
         self.logger.warning("{}".format(self.get_avg_dice()))#Prumer poctu kostek ostatnich:
+        self.logger.warning("{}".format(board.nb_players_alive()))#Aktualni pocet protihracu
+        self.logger.warning("{}".format(len(Helper.borders_of_largest_region(board, self.player_name)))) #delka hranic nejvetsiho regionu
+        self.logger.warning("{}".format(len(board.get_player_border(self.player_name)))) #celkova delka hranic
+        self.logger.warning("{}".format(Helper.avg_prob_of_holding_borders(board, self.player_name, False))) #prumerna pst udržení uzemi na vsech hranicich
+        self.logger.warning("{}".format(Helper.avg_prob_of_holding_borders(board, self.player_name, True))) #prumerna pst udržení uzemi na hranicich nejvetsiho regionu
+        self.logger.warning("{}".format(Helper.avg_nb_of_border_dice(board, self.player_name)))#prumerny pocet kostek na hranicich nejvetsiho regionu
         self.logger.warning("{}".format(nb_turns_this_game)) #Pocet odehranych kol:
         self.logger.warning("---------------------")
 
@@ -108,6 +114,10 @@ class Helper:
     def avg_nb_of_border_dice(board: Board, player_name):
         """Get average number of dice on border of largest region"""
         border = Helper.borders_of_largest_region(board, player_name)
+
+        if len(border) == 0:  # only for last round - all areas are mine
+            return 8
+
         dice_sum = 0
         for areaID in border:
             dice_sum += board.get_area(areaID).get_dice()
@@ -123,9 +133,14 @@ class Helper:
         else:
             borders = board.get_player_border(player_name)
 
+        if len(borders) == 0:  # only for last round - all areas are mine
+            return 1
+
         probs = 0
         for area in borders:
             probs += can_hold(board, area.get_name(), area.get_dice(), player_name)
+
+
 
         return probs/len(borders)
       

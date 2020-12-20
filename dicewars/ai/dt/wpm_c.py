@@ -5,7 +5,10 @@ from ..utils import probability_of_successful_attack, sigmoid
 from ..utils import possible_attacks
 
 from dicewars.client.ai_driver import BattleCommand, EndTurnCommand
-
+from dicewars.ai.utils import possible_attacks, probability_of_holding_area as can_hold, probability_of_successful_attack as should_attack, attack_succcess_probability
+from dicewars.client.game.board import Board
+from typing import List, Optional
+from dicewars.ai.DreamAI.DreamAI import Helper
 
 class AI:
     """Agent using Win Probability Maximization (WPM) using logarithms
@@ -72,14 +75,7 @@ class AI:
         probability.
         """
 
-        self.board = board
-        self.logger.warning("---------------------")
-        self.logger.warning("{}".format(len(board.get_players_regions(self.player_name))))  # Počet regionů:
-        self.logger.warning("{}".format(self.get_largest_region()))  # Njevětší region:
-        self.logger.warning("{}".format(board.get_player_dice(self.player_name)))  # Počet kostek mých
-        self.logger.warning("{}".format(self.get_avg_dice()))  # Prumer poctu kostek ostatnich:
-        self.logger.warning("{}".format(nb_turns_this_game))  # Pocet odehranych kol:
-        self.logger.warning("---------------------")
+
         self.board = board
         self.logger.debug("Looking for possible turns.")
         turns = self.possible_turns()
@@ -101,7 +97,27 @@ class AI:
                 if atk_power == 8:
                     return BattleCommand(area_name, turns[i][1])
 
+#else
         self.logger.debug("Don't want to attack anymore.")
+
+        self.logger.warning("---------------------")
+        self.logger.warning("{}".format(len(board.get_players_regions(self.player_name))))  # Počet regionů:
+        self.logger.warning("{}".format(self.get_largest_region()))  # Njevětší region:
+        self.logger.warning("{}".format(board.get_player_dice(self.player_name)))  # Počet kostek mých
+        self.logger.warning("{}".format(self.get_avg_dice()))  # Prumer poctu kostek ostatnich:
+        self.logger.warning("{}".format(board.nb_players_alive()))  # Aktualni pocet protihracu
+        self.logger.warning("{}".format(
+            len(Helper.borders_of_largest_region(board, self.player_name))))  # delka hranic nejvetsiho regionu
+        self.logger.warning("{}".format(len(board.get_player_border(self.player_name))))  # celkova delka hranic
+        self.logger.warning("{}".format(Helper.avg_prob_of_holding_borders(board, self.player_name,
+                                                                           False)))  # prumerna pst udržení uzemi na vsech hranicich
+        self.logger.warning("{}".format(Helper.avg_prob_of_holding_borders(board, self.player_name,
+                                                                           True)))  # prumerna pst udržení uzemi na hranicich nejvetsiho regionu
+        self.logger.warning("{}".format(Helper.avg_nb_of_border_dice(board,
+                                                                     self.player_name)))  # prumerny pocet kostek na hranicich nejvetsiho regionu
+        self.logger.warning("{}".format(nb_turns_this_game))  # Pocet odehranych kol:
+        self.logger.warning("---------------------")
+
         return EndTurnCommand()
 
     def get_features(self, end_turn=False):
