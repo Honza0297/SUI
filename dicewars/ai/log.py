@@ -5,34 +5,33 @@ from typing import List, Optional
 
 class Log:
 
-    def __init__(self, logger, board, before: bool = False):
-        self.board = board
+    def __init__(self, logger, before: bool = True):
         self.before = before
         self.helper = Helper()
         self.logger = logger
 
 
-    def before_turn(self, player_name, nb_turns_this_game, largest_region, avg_dice):
+    def before_turn(self, board, player_name, nb_turns_this_game, largest_region, avg_dice):
         if self.before:
-            self.log(player_name, nb_turns_this_game, largest_region, avg_dice)
+            self.log(board, player_name, nb_turns_this_game, largest_region, avg_dice)
 
-    def after_turn(self, player_name, nb_turns_this_game, largest_region, avg_dice):
+    def after_turn(self, board, player_name, nb_turns_this_game, largest_region, avg_dice):
         if not self.before:
-            self.log(player_name, nb_turns_this_game, largest_region, avg_dice)
+            self.log(board, player_name, nb_turns_this_game, largest_region, avg_dice)
 
-    def log(self, player_name, nb_turns_this_game, largest_region, avg_dice):
+    def log(self, board, player_name, nb_turns_this_game, largest_region, avg_dice):
         
         self.logger.warning("---------------------")
-        self.logger.warning(f"{len(self.board.get_players_regions(player_name))}")  # Počet regionů:
+        self.logger.warning(f"{len(board.get_players_regions(player_name))}")  # Počet regionů:
         self.logger.warning(f"{largest_region}")  # Njevětší region:
-        self.logger.warning(f"{self.board.get_player_dice(player_name)}")  # Počet kostek mých
+        self.logger.warning(f"{board.get_player_dice(player_name)}")  # Počet kostek mých
         self.logger.warning(f"{avg_dice}")  # Prumer poctu kostek ostatnich:
-        self.logger.warning(f"{self.board.nb_players_alive()}")  # Aktualni pocet protihracu
-        self.logger.warning(f"{len(self.helper.borders_of_largest_region(self.board, player_name))}")  # delka hranic nejvetsiho regionu
-        self.logger.warning(f"{len(self.board.get_player_border(player_name))}")  # celkova delka hranic
-        self.logger.warning(f"{self.helper.avg_prob_of_holding_borders(self.board, player_name, False)}")  # prumerna pst udržení uzemi na vsech hranicich
-        self.logger.warning(f"{self.helper.avg_prob_of_holding_borders(self.board, player_name, True)}")  # prumerna pst udržení uzemi na hranicich nejvetsiho regionu
-        self.logger.warning(f"{self.helper.avg_nb_of_border_dice(self.board, player_name)}")  # prumerny pocet kostek na hranicich nejvetsiho regionu
+        self.logger.warning(f"{board.nb_players_alive()}")  # Aktualni pocet protihracu
+        self.logger.warning(f"{len(self.helper.borders_of_largest_region(board, player_name))}")  # delka hranic nejvetsiho regionu
+        self.logger.warning(f"{len(board.get_player_border(player_name))}")  # celkova delka hranic
+        self.logger.warning(f"{self.helper.avg_prob_of_holding_borders(board, player_name, False)}")  # prumerna pst udržení uzemi na vsech hranicich
+        self.logger.warning(f"{self.helper.avg_prob_of_holding_borders(board, player_name, True)}")  # prumerna pst udržení uzemi na hranicich nejvetsiho regionu
+        self.logger.warning(f"{self.helper.avg_nb_of_border_dice(board, player_name)}")  # prumerny pocet kostek na hranicich nejvetsiho regionu
         self.logger.warning(f"{nb_turns_this_game}")  # Pocet odehranych kol:
         self.logger.warning("---------------------")
 

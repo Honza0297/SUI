@@ -37,7 +37,7 @@ class AI:
         self.logger = logging.getLogger('AI')
         self.players = board.nb_players_alive()
         self.nb_players = board.nb_players_alive()
-        self.log = Log(self.logger, board)
+        self.log = Log(self.logger)
 
         self.largest_region = []
 
@@ -63,7 +63,7 @@ class AI:
         probability.
         """
         self.board = board
-        self.log.before_turn(self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+        self.log.before_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
         self.logger.debug("Looking for possible turns.")
         turns = self.possible_turns()
 
@@ -78,7 +78,7 @@ class AI:
 
         self.logger.debug("No more plays.")
 
-        self.log.after_turn(self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+        self.log.after_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
         return EndTurnCommand()
 
     def possible_turns(self):

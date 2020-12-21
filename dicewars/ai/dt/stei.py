@@ -31,7 +31,7 @@ class AI:
         """
         self.player_name = player_name
         self.logger = logging.getLogger('AI')
-        self.log = Log(self.logger, board)
+        self.log = Log(self.logger)
 
         self.nb_players = board.nb_players_alive()
         nb_players = self.nb_players
@@ -53,7 +53,7 @@ class AI:
         the largest region. If there is no such move, the agent ends it's turn.
         """
         self.board = board
-        self.log.before_turn(self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+        self.log.before_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
 
         self.logger.debug("Looking for possible turns.")
         self.get_largest_region()
@@ -69,7 +69,7 @@ class AI:
 
         self.logger.debug("No more plays.")
 
-        self.log.after_turn(self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+        self.log.after_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
         
         return EndTurnCommand()
 

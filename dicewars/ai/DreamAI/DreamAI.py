@@ -22,7 +22,7 @@ class AI:
         self.logger.debug("player_name is :{}".format(player_name))
         self.logger.debug("players order is :{}".format(players_order))
         self.logger.debug("board is :{}".format(board.areas))
-        self.log = Log(self.logger, board)
+        self.log = Log(self.logger)
 
 
     def ai_turn(self, board, nb_moves_this_turn, nb_turns_this_game, time_left):
@@ -32,7 +32,7 @@ class AI:
         """
 
         self.board = board
-        self.log.before_turn(self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+        self.log.before_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
 
         for region in board.get_players_regions(self.player_name):
             self.logger.debug(f"{region}")
@@ -44,7 +44,7 @@ class AI:
                 return BattleCommand(source.get_name(), target.get_name())
         else:
             self.logger.debug("No more possible turns.")
-            self.log.after_turn(self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+            self.log.after_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
             return EndTurnCommand()
 
 
