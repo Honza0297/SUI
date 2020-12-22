@@ -85,6 +85,24 @@ class Helper:
         for area in borders:
             probs += can_hold(board, area.get_name(), area.get_dice(), player_name)
 
-
-
         return probs/len(borders)
+
+    @staticmethod
+    def largest_region_size(board, player_name):
+        """Get size of the largest region, including the areas within"""
+
+        players_regions = board.get_players_regions(player_name)
+        max_region_size = max(len(region) for region in players_regions)
+        return max_region_size
+
+    @staticmethod
+    def get_avg_dice(board, nb_players, player_name):
+        if nb_players == 1:
+            return 1
+
+        sum = 0.0
+        for num in range(1,nb_players+1):
+            if(num == player_name): pass
+            sum += board.get_player_dice(num)
+
+        return sum / (nb_players-1)

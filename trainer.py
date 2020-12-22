@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import numpy as np
 import copy
 
-NB_FEAS = 5
+NB_FEAS = 11
 
 class dataset:
     def __init__(self, positives, negatives):
@@ -85,9 +85,11 @@ if __name__ == "__main__":
     train_dataset = dataset("positives.trn", "negatives.trn")
     val_dataset = dataset("positives.val", "negatives.val")
 
-    epochs = 30
-    lr = 0.001
-    batch_size = 100
+    epochs = 200
+    lr = 0.1
+    batch_size = 10000
     model, losses, accuracies = train_multiple_llr(epochs, lr, batch_size)
+
+    torch.save(model.state_dict(), "fea11.pt")
 
     print(accuracies)
