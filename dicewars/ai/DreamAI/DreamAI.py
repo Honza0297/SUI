@@ -46,7 +46,7 @@ class State:
             len(Helper.borders_of_largest_region(board, self.player_name)),
             len(board.get_player_border(self.player_name)),
             Helper.avg_prob_of_holding_borders(board, self.player_name, False),
-            Helper.avg_prob_of_holding_borders(board, self.player_name, True),
+            float(Helper.avg_prob_of_holding_borders(board, self.player_name, True)),
             Helper.avg_nb_of_border_dice(board, self.player_name),
             self.nb_turns])
 
@@ -65,8 +65,7 @@ class AI:
 
         self.logger = logging.getLogger('AI')
         self.logger.setLevel(logging.WARN)
-        # Pred odevzdanim zmenit na stderr!!!
-        #print(self.logger)
+
         self.logger.info("DreamAI started.")
         self.logger.debug("player_name is :{}".format(player_name))
         self.logger.debug("players order is :{}".format(players_order))
@@ -89,14 +88,10 @@ class AI:
         self.nb_players = board.nb_players_alive()
         # self.log.before_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
 
-        sum=0
-        if self.nb_players == 2:
-            for num in range(1, self.nb_players + 1):
-                if (num != self.player_name):
-                    sum += len(board.get_player_areas(num))
 
-            if sum == 1: #zbyva posledni protihrac s jedinym uzemim
-                return self.lite_version(nb_moves_this_turn)
+        if time_left < 0.3:
+            return self.lite_version(nb_moves_this_turn)
+
 
         data = np.asarray([
             len(board.get_players_regions(self.player_name)),
@@ -136,7 +131,7 @@ class AI:
 
 
         # self.log.after_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
-        self.logger.warning(str(nb_turns_this_game) + ":" + str(nb_moves_this_turn))
+        # self.logger.warning(str(nb_turns_this_game) + ":" + str(nb_moves_this_turn))
         if nb_moves_this_turn == 0:
             self.nb_turns_without_move += 1
         if self.nb_turns_without_move >= 8:
