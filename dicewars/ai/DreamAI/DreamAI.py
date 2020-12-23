@@ -76,6 +76,7 @@ class AI:
         self.model = LogisticRegressionMulti()
         self.model.load_state_dict(torch.load("fea11.pt"))
         self.model.eval()
+        # print("jsem ", player_name)
 
 
 
@@ -110,7 +111,7 @@ class AI:
             Helper.avg_nb_of_border_dice(board, self.player_name),
             nb_turns_this_game])
         #output = self.model(data)
-        current_state_val = self.model.prob_class_1(data) #torch.mean(output).item()
+        current_state_val = 0.7 * self.model.prob_class_1(data) #torch.mean(output).item()
 
         self.states = []
         self.state_search(State(copy.deepcopy(board), [], [], self.player_name, nb_turns_this_game, self.model))
