@@ -3,7 +3,7 @@ import copy
 import sys
 import torch
 import trainer
-
+import numpy as np
 from dicewars.ai.utils import possible_attacks, probability_of_holding_area as can_hold, probability_of_successful_attack as should_attack, attack_succcess_probability
 from ..log import Log
 from ..log import Helper
@@ -37,7 +37,7 @@ class State:
 
     def evaluateState(self):
         board = self.board
-        data = torch.tensor([
+        data = np.asarray([
             len(board.get_players_regions(self.player_name)),
             Helper.largest_region_size(board, self.player_name),
             board.get_player_dice(self.player_name),
@@ -50,7 +50,7 @@ class State:
             Helper.avg_nb_of_border_dice(board, self.player_name),
             self.nb_turns])
 
-        return torch.mean(self.model(data)).item()
+        return self.model.prob_class_1(data) #torch.mean(self.model(data)).item()
 
 
 class AI:
@@ -97,7 +97,7 @@ class AI:
             if sum == 1: #zbyva posledni protihrac s jedinym uzemim
                 return self.lite_version(nb_moves_this_turn)
 
-        data = torch.tensor([
+        data = np.asarray([
             len(board.get_players_regions(self.player_name)),
             Helper.largest_region_size(board, self.player_name),
             board.get_player_dice(self.player_name),
@@ -109,8 +109,8 @@ class AI:
             Helper.avg_prob_of_holding_borders(board, self.player_name, True),
             Helper.avg_nb_of_border_dice(board, self.player_name),
             nb_turns_this_game])
-        output = self.model(data)
-        current_state_val = torch.mean(output).item()
+        #output = self.model(data)
+        current_state_val = self.model.prob_class_1(data) #torch.mean(output).item()
 
         self.states = []
         self.state_search(State(copy.deepcopy(board), [], [], self.player_name, nb_turns_this_game, self.model))
