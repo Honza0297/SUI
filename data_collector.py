@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE
 import json, csv
 import re
 import sys
+import random
 
 num_of_features = 11
 AIs = ["dt.sdc", "dt.ste", "dt.stei", "dt.wpm_c"]
@@ -36,8 +37,8 @@ def log_results(winner):
 
 if __name__ == '__main__':
     for i in range(int(sys.argv[1])):
-
-        process = Popen(["python3", "./scripts/dicewars-ai-only.py", "-r", "-n", "1", "-l", "log", "--ai", "dt.sdc", "dt.ste", "dt.stei", "dt.wpm_c"], stdout=PIPE)
+        ais = random.sample(AIs, 4)
+        process = Popen(["python3", "./scripts/dicewars-ai-only.py", "-r", "-n", "1", "-l", "log", "--ai"]+ais, stdout=PIPE)
 
         (output, err) = process.communicate()
         exit_code = process.wait()

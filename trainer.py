@@ -70,13 +70,10 @@ def train_multiple_llr(nb_epochs, lr, batch_size):
         temp = evaluate(model, val_dataset.xs, val_dataset.targets)
         accuracies.append(temp)
         print("# Current accurancy is: {}".format(temp))
-        if len(accuracies) > 1:
-            best = True
-            for i in range(len(accuracies) - 2):
-                if accuracies[-1] < accuracies[i]:
-                    best = False
-            if best:
+        if temp == max(accuracies):
+
                 best_model = copy.deepcopy(model)
+
     return best_model, losses, accuracies
 
 
@@ -85,11 +82,12 @@ if __name__ == "__main__":
     train_dataset = dataset("positives.trn", "negatives.trn")
     val_dataset = dataset("positives.val", "negatives.val")
 
-    epochs = 200
-    lr = 0.1
+    epochs = 10000
+    lr = 0.05
     batch_size = 10000
-    model, losses, accuracies = train_multiple_llr(epochs, lr, batch_size)
-
+    with torch.no_grad():
+        model, losses, accuracies = train_multiple_llr(epochs, lr, batch_size)
+    print("max accuracy is", max(accuracies))
+    print("accuracies", accuracies)
     torch.save(model.state_dict(), "fea11.pt")
 
-    print(accuracies)
