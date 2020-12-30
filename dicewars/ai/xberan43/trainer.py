@@ -85,11 +85,11 @@ if __name__ == "__main__":
     train_dataset = dataset("positives.trn", "negatives.trn")
     val_dataset = dataset("positives.val", "negatives.val")
 
-    epochs = 200
-    lr = 0.1
-    batch_size = 10000
+    epochs = 50
+    lr = 0.001
+    batch_size = 150
     model, losses, accuracies = train_multiple_llr(epochs, lr, batch_size)
 
-    torch.save(model.state_dict(), "fea11.pt")
+    torch.save(model.state_dict(), "fea11Before.pt")
 
     print(accuracies)

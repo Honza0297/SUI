@@ -58,6 +58,4 @@ if __name__ == '__main__':
 
 
 
-    """V out_dict je ted vyhravajici AI
-    TODO: z logu vysmazit cisla a ulozit je jako csv: pos pro tu co vyhrala a  neg pro ostatni"""
     pass

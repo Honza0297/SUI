@@ -1,20 +1,15 @@
-import logging
 import copy
-import sys
 import torch
-import trainer
 import numpy as np
-from dicewars.ai.utils import possible_attacks, probability_of_holding_area as can_hold, probability_of_successful_attack as should_attack, attack_succcess_probability
-from ..log import Log
-from ..log import Helper
+from dicewars.ai.utils import possible_attacks, probability_of_holding_area as can_hold, attack_succcess_probability
+
 
 
 from dicewars.client.ai_driver import BattleCommand, EndTurnCommand
 from dicewars.client.game.board import Board
-from dicewars.client.game.player import Player
-from typing import List, Optional
+from typing import List
 from dicewars.client.game.area import Area
-from trainer import LogisticRegressionMulti
+from dicewars.ai.xberan43.trainer import LogisticRegressionMulti
 
 class State:
     def __init__(self, board: Board, attack_sequence, probabilities, player_name, nb_turns, model):
@@ -50,7 +45,7 @@ class State:
             Helper.avg_nb_of_border_dice(board, self.player_name),
             self.nb_turns])
 
-        return self.model.prob_class_1(data) #torch.mean(self.model(data)).item()
+        return self.model.prob_class_1(data)
 
 
 class AI:
@@ -63,19 +58,9 @@ class AI:
         self.nb_turns_without_move = 0
 
 
-        self.logger = logging.getLogger('AI')
-        self.logger.setLevel(logging.WARN)
-
-        self.logger.info("DreamAI started.")
-        self.logger.debug("player_name is :{}".format(player_name))
-        self.logger.debug("players order is :{}".format(players_order))
-        self.logger.debug("board is :{}".format(board.areas))
-        self.log = Log(self.logger)
-
         self.model = LogisticRegressionMulti()
-        self.model.load_state_dict(torch.load("fea11.pt"))
+        self.model.load_state_dict(torch.load("dicewars/ai/xberan43/fea11.pt"))
         self.model.eval()
-        # print("jsem ", player_name)
 
 
 
@@ -86,7 +71,6 @@ class AI:
         """
         self.board = board
         self.nb_players = board.nb_players_alive()
-        # self.log.before_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
 
 
         if time_left < 0.3:
@@ -105,8 +89,8 @@ class AI:
             Helper.avg_prob_of_holding_borders(board, self.player_name, True),
             Helper.avg_nb_of_border_dice(board, self.player_name),
             nb_turns_this_game])
-        #output = self.model(data)
-        current_state_val = 0.7 * self.model.prob_class_1(data) #torch.mean(output).item()
+
+        current_state_val = 0.7 * self.model.prob_class_1(data) #evalution of current state is degradated on purpose, so the AI is more "agressive"
 
         self.states = []
         self.state_search(State(copy.deepcopy(board), [], [], self.player_name, nb_turns_this_game, self.model))
@@ -129,9 +113,6 @@ class AI:
 
         # ELSE
 
-
-        # self.log.after_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
-        # self.logger.warning(str(nb_turns_this_game) + ":" + str(nb_moves_this_turn))
         if nb_moves_this_turn == 0:
             self.nb_turns_without_move += 1
         if self.nb_turns_without_move >= 8:
@@ -155,21 +136,7 @@ class AI:
             self.nb_turns_without_move += 1
         return EndTurnCommand()
 
-    # def state_search(self, board: Board, attack_sequence = [], probabilities=[]):
-    #     attack_sequence = attack_sequence
-    #     probabilities = probabilities
-    #     for attack in possible_attacks(board, self.player_name):
-    #         source, target = attack
-    #         success_probability = attack_succcess_probability(source.get_dice(), target.get_dice())
-    #         if success_probability < 0.5 and source.get_dice() != 8:
-    #             return
-    #
-    #         attack_sequence.append(attack)
-    #         probabilities.append(success_probability)
-    #         board_copy = self.create_board_after_attack(board, source, target)
-    #         self.states.append(State(board_copy, attack_sequence, probabilities))
-    #
-    #         self.state_search(board_copy, attack_sequence)
+
 
     def state_search(self, state: State, recursive_level = 0):
         """Vygeneruje vsechny mozne stavy """
@@ -196,37 +163,77 @@ class AI:
         board.get_area(source).set_dice(1)  # set number of dice in source are to 1
         return board
 
-    # def get_avg_dice(self):
-    #     sum = 0.0
-    #     for num in range(1,self.nb_players+1):
-    #         if(num == self.player_name): pass
-    #         sum += self.board.get_player_dice(num)
-    #
-    #     return sum / (self.nb_players-1)
+
+class Helper:
+    @staticmethod
+    def player_largest_region(board: Board, player_name):
+        """Get size of the largest region, including the areas within"""
+
+        players_regions = board.get_players_regions(player_name)
+        max_region_size = max(len(region) for region in players_regions)
+        max_sized_regions = [region for region in players_regions if len(region) == max_region_size]
+
+        largest_region = max_sized_regions[0]
+        return largest_region
 
 
-    # def get_largest_region(self):
-    #     """Get size of the largest region, including the areas within
-    #
-    #     Attributes
-    #     ----------
-    #     largest_region : list of int
-    #         Names of areas in the largest region
-    #
-    #     Returns
-    #     -------
-    #     int
-    #         Number of areas in the largest region
-    #     """
-    #     self.largest_region = []
-    #
-    #     players_regions = self.board.get_players_regions(self.player_name)
-    #     max_region_size = max(len(region) for region in players_regions)
-    #     max_sized_regions = [region for region in players_regions if len(region) == max_region_size]
-    #
-    #     self.largest_region = max_sized_regions[0]
-    #     return max_region_size
+    @staticmethod
+    def borders_of_largest_region(board: Board, player_name) -> List[int]:
+        """Get borders IDs of largest region"""
+        region = Helper.player_largest_region(board, player_name)
+        return [areaID for areaID in region if board.is_at_border(board.get_area(areaID))]
 
+    @staticmethod
+    def avg_nb_of_border_dice(board: Board, player_name):
+        """Get average number of dice on border of largest region"""
+        border = Helper.borders_of_largest_region(board, player_name)
+
+        if len(border) == 0:  # only for last round - all areas are mine
+            return 8
+
+        dice_sum = 0
+        for areaID in border:
+            dice_sum += board.get_area(areaID).get_dice()
+
+        return dice_sum/len(border)
+
+    @staticmethod
+    def avg_prob_of_holding_borders(board: Board, player_name:int, largest_region_only=False):
+        """Get average probability of holding border areas until next turn"""
+        if(largest_region_only):
+            border_ids = Helper.borders_of_largest_region(board, player_name)
+            borders = [board.get_area(areaID) for areaID in border_ids]
+        else:
+            borders = board.get_player_border(player_name)
+
+        if len(borders) == 0:  # only for last round - all areas are mine
+            return 1
+
+        probs = 0
+        for area in borders:
+            probs += can_hold(board, area.get_name(), area.get_dice(), player_name)
+
+        return probs/len(borders)
+
+    @staticmethod
+    def largest_region_size(board, player_name):
+        """Get size of the largest region, including the areas within"""
+
+        players_regions = board.get_players_regions(player_name)
+        max_region_size = max(len(region) for region in players_regions)
+        return max_region_size
+
+    @staticmethod
+    def get_avg_dice(board, nb_players, player_name):
+        if nb_players == 1:
+            return 1
+
+        sum = 0.0
+        for num in range(1,nb_players+1):
+            if(num == player_name): pass
+            sum += board.get_player_dice(num)
+
+        return sum / (nb_players-1)
 
 
 

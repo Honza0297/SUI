@@ -9,7 +9,6 @@ from dicewars.client.ai_driver import BattleCommand, EndTurnCommand
 from dicewars.ai.utils import possible_attacks, probability_of_holding_area as can_hold, probability_of_successful_attack as should_attack, attack_succcess_probability
 from dicewars.client.game.board import Board
 from typing import List, Optional
-from dicewars.ai.DreamAI.DreamAI import Helper
 
 class AI:
     """Agent using Win Probability Maximization (WPM) using logarithms of player dice
