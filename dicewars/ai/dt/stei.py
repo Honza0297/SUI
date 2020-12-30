@@ -1,9 +1,12 @@
 import logging
 from ..utils import probability_of_holding_area, probability_of_successful_attack
 from ..utils import possible_attacks
+from ..log import Log
 
 from dicewars.client.ai_driver import BattleCommand, EndTurnCommand
-
+from dicewars.ai.utils import possible_attacks, probability_of_holding_area as can_hold, probability_of_successful_attack as should_attack, attack_succcess_probability
+from dicewars.client.game.board import Board
+from typing import List, Optional
 
 class AI:
     """Agent using improved Signle Turn Expectiminimax (STEi) strategy
@@ -28,8 +31,10 @@ class AI:
         """
         self.player_name = player_name
         self.logger = logging.getLogger('AI')
+        self.log = Log(self.logger)
 
-        nb_players = board.nb_players_alive()
+        self.nb_players = board.nb_players_alive()
+        nb_players = self.nb_players
         self.logger.info('Setting up for {}-player game'.format(nb_players))
         if nb_players == 2:
             self.treshold = 0.2
@@ -48,6 +53,8 @@ class AI:
         the largest region. If there is no such move, the agent ends it's turn.
         """
         self.board = board
+        self.log.before_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+
         self.logger.debug("Looking for possible turns.")
         self.get_largest_region()
         turns = self.possible_turns()
@@ -61,6 +68,9 @@ class AI:
             return BattleCommand(turn[0], turn[1])
 
         self.logger.debug("No more plays.")
+
+        self.log.after_turn(board, self.player_name, nb_turns_this_game, self.get_largest_region(), self.get_avg_dice())
+        
         return EndTurnCommand()
 
     def possible_turns(self):
@@ -71,6 +81,7 @@ class AI:
         the preference of these moves. The list is sorted in descending order with
         respect to preference * hold probability
         """
+
         turns = []
         for source, target in possible_attacks(self.board, self.player_name):
             atk_power = source.get_dice()
@@ -105,3 +116,11 @@ class AI:
 
         self.largest_region = max_sized_regions[0]
         return max_region_size
+
+    def get_avg_dice(self):
+        sum = 0.0
+        for num in range(1,self.nb_players+1):
+            if(num == self.player_name): pass
+            sum += self.board.get_player_dice(num)
+
+        return sum / (self.nb_players-1)
